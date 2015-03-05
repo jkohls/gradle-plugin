@@ -19,6 +19,7 @@ package com.appthwack
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.*
 
 class AppThwackPlugin implements Plugin<Project> {
 
@@ -37,6 +38,6 @@ class AppThwackPlugin implements Plugin<Project> {
         extension = project.extensions.create(PLUGIN_NAME, AppThwackExtension)
 
         project.android.testServer(
-                new AppThwackServer(extension, project.android.logger))
+                new AppThwackServer(extension, Logging.getLogger("appthwack")))
     }
 }

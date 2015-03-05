@@ -22,23 +22,23 @@ import java.util.HashMap;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.testing.api.TestServer;
-import com.android.utils.ILogger;
 import com.appthwack.AppThwackPlugin;
 import com.appthwack.appthwack.*;
+import org.gradle.api.logging.*;
 
 
 public class AppThwackServer extends TestServer {
 
     private final AppThwackExtension extension;
-    private final ILogger logger;
+    //private final ILogger logger;
+    private final Logger logger;
     private AppThwackApi api;
 
     AppThwackServer(@NonNull AppThwackExtension extension,
-                    @NonNull ILogger logger) {
+                    @NonNull Logger logger) {
         this.extension = extension;
-        this.logger = logger;
+        this.logger = logger; 
     }
-
     /**
      * Name of the gradle plugin.
      * @return appthwack
@@ -57,7 +57,7 @@ public class AppThwackServer extends TestServer {
     @Override
     public void uploadApks(@NonNull String variantName, @NonNull File testApk, @Nullable File testedApk) {
         if (testedApk == null) {
-            logger.warning("[AppThwack] Application APK required.");
+            logger.warn("[AppThwack] Application APK required.");
             return;
         }
 
@@ -72,7 +72,7 @@ public class AppThwackServer extends TestServer {
         //Attempt to get AppThwack project with user defined name.
         AppThwackProject project = api.getProject(projectName);
         if (project == null) {
-            logger.warning("[AppThwack] Project '%s' not found.", projectName);
+            logger.warn("[AppThwack] Project '%s' not found.", projectName);
             return;
         }
 
@@ -82,7 +82,7 @@ public class AppThwackServer extends TestServer {
         //Attempt to get AppThwack device pool with user defined name.
         AppThwackDevicePool devicePool = project.getDevicePool(devicePoolName);
         if (devicePool == null) {
-            logger.warning("[AppThwack] Device Pool '%s' not found.", devicePoolName);
+            logger.warn("[AppThwack] Device Pool '%s' not found.", devicePoolName);
             return;
         }
 
@@ -91,7 +91,7 @@ public class AppThwackServer extends TestServer {
         //Upload APK.
         AppThwackFile app = uploadFile(testedApk);
         if (app == null) {
-            logger.warning("[AppThwack] Failed to upload apk '%s'.", testedApk.getName());
+            logger.warn("[AppThwack] Failed to upload apk '%s'.", testedApk.getName());
             return;
         }
 
@@ -100,7 +100,7 @@ public class AppThwackServer extends TestServer {
 
         String type = extension.getType();
         if (tests == null && !type.equalsIgnoreCase(AppThwackExtension.APP_EXPLORER_TYPE)) {
-            logger.warning("[AppThwack] Unable to schedule run, failed to upload required test content.");
+            logger.warn("[AppThwack] Unable to schedule run, failed to upload required test content.");
             return;
         }
 
@@ -114,7 +114,7 @@ public class AppThwackServer extends TestServer {
         //Schedule our test run.
         AppThwackRun run = scheduleTestRun(project, devicePool, type, name, app, tests, extension.explorerOptions);
         if (run == null) {
-            logger.warning("[AppThwack] Failed to schedule test run '%s'.", name);
+            logger.warn("[AppThwack] Failed to schedule test run '%s'.", name);
             return;
         }
 
@@ -131,27 +131,27 @@ public class AppThwackServer extends TestServer {
         //[Required]: AppThwack Api Key.
         String apiKey = extension.getApiKey();
         if (apiKey == null || apiKey.isEmpty()) {
-            logger.warning("AppThwack apiKey is required. See https://appthwack.com/user/profile for details.");
+            logger.warn("AppThwack apiKey is required. See https://appthwack.com/user/profile for details.");
             return false;
         }
 
         //[Required]: AppThwack project name.
         String project = extension.getProject();
         if (project == null || project.isEmpty()) {
-            logger.warning("[AppThwack] project name is required.");
+            logger.warn("[AppThwack] project name is required.");
             return false;
         }
 
         //[Required]: AppThwack test runner type. Defaults to junit.
         String type = extension.getType();
         if (type == null || type.isEmpty()) {
-            logger.warning("[AppThwack] type is required. Expects: junit, calabash, appexplorer.");
+            logger.warn("[AppThwack] type is required. Expects: junit, calabash, appexplorer.");
             return false;
         }
         if (!(type.equalsIgnoreCase(AppThwackExtension.JUNIT_TYPE)
                 || type.equalsIgnoreCase(AppThwackExtension.CALABASH_TYPE)
                 || type.equalsIgnoreCase(AppThwackExtension.APP_EXPLORER_TYPE))) {
-            logger.warning("[AppThwack] Type is invalid. Expects: junit, calabash, appexplorer.");
+            logger.warn("[AppThwack] Type is invalid. Expects: junit, calabash, appexplorer.");
             return false;
         }
         return true;
@@ -169,14 +169,14 @@ public class AppThwackServer extends TestServer {
         //Upload JUnit/Robotium test content (.apk).
         if (type.equalsIgnoreCase(AppThwackExtension.JUNIT_TYPE)) {
             if (testApk == null) {
-                logger.warning("[AppThwack] No test apk provided. Unable to run JUnit/Robotium tests.");
+                logger.warn("[AppThwack] No test apk provided. Unable to run JUnit/Robotium tests.");
                 return null;
             }
             System.out.println(String.format("[AppThwack] Uploading test apk '%s'.", testApk.getName()));
 
             AppThwackFile testApkFile = uploadFile(testApk);
             if (testApkFile == null) {
-                logger.warning("[AppThwack] Failed to upload test apk '%s'.", testApk.getName());
+                logger.warn("[AppThwack] Failed to upload test apk '%s'.", testApk.getName());
                 return null;
             }
             return testApkFile;
@@ -186,23 +186,23 @@ public class AppThwackServer extends TestServer {
         if (type.equalsIgnoreCase(AppThwackExtension.CALABASH_TYPE)) {
             String calabashPath = extension.getCalabashContent();
             if (calabashPath == null || calabashPath.isEmpty()) {
-                logger.warning("[AppThwack] No content provided. Unable to run Calabash tests.");
+                logger.warn("[AppThwack] No content provided. Unable to run Calabash tests.");
                 return null;
             }
             File content = new File(calabashPath);
             if (!content.exists()) {
-                logger.warning("[AppThwack] Calabash content not found at '%s'.", content.getAbsolutePath());
+                logger.warn("[AppThwack] Calabash content not found at '%s'.", content.getAbsolutePath());
                 return null;
             }
             if (!calabashPath.endsWith(".zip")) {
-                logger.warning("[AppThwack] Calabash content must be of type .zip.");
+                logger.warn("[AppThwack] Calabash content must be of type .zip.");
                 return null;
             }
             System.out.println(String.format("[AppThwack] Uploading Calabash test content '%s'.", content.getName()));
 
             AppThwackFile calabashTests = uploadFile(content);
             if (calabashTests == null) {
-                logger.warning("[AppThwack] Failed to upload Calabash content '%s'.", content.getAbsolutePath());
+                logger.warn("[AppThwack] Failed to upload Calabash content '%s'.", content.getAbsolutePath());
                 return null;
             }
             return calabashTests;
@@ -241,7 +241,7 @@ public class AppThwackServer extends TestServer {
             }
         }
         catch(AppThwackException e) {
-            logger.error(e, "[AppThwack] Failed to schedule run '%s' of type '%s'.", name, type);
+            logger.error("[AppThwack] Failed to schedule run '%s' of type '%s'. %s", name, type, e);
             return null;
         }
     }
@@ -256,7 +256,7 @@ public class AppThwackServer extends TestServer {
             return api.uploadFile(apk);
         }
         catch(AppThwackException e) {
-            logger.error(e, "[AppThwack] Failed to upload file '%s'.", apk.getName());
+            logger.error("[AppThwack] Failed to upload file '%s'. %s", apk.getName(), e);
             return null;
         }
     }
