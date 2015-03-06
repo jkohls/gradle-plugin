@@ -30,7 +30,6 @@ import org.gradle.api.logging.*;
 public class AppThwackServer extends TestServer {
 
     private final AppThwackExtension extension;
-    //private final ILogger logger;
     private final Logger logger;
     private AppThwackApi api;
 
