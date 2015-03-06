@@ -21,7 +21,7 @@ dependencies {
     gradleApi gradleApi()
     compile localGroovy()
 
-    compile 'com.android.tools.build:builder-test-api:0.5.2'
+    compile 'com.android.tools.build:builder-test-api:1.0.0'
     compile 'com.appthwack:appthwack:1.4'
 
     testCompile 'junit:junit:3.8.1'
